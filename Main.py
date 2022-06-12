@@ -27,6 +27,8 @@ snw_abi_address = '0x98d9798511d60103834a8b117dd7f51b8f8cd0d6'
 
 summary_info = 0
 summary_claim = 0
+
+line = '-----------------------------------------------------------'
 # GLOBAL
 
 # COMMON FUNCTIONS
@@ -68,11 +70,13 @@ def generate_wallets(amount, mnemonic):
 # COMMON FUNCTIONS
 
 # STATISTIC FUNCTIONS
-def statistic_option(abi_data, wallets_array):
+def statistic_option(abi_data, wallets_array, is_details):
     index, total_available, total_claimable = 1, 0, 0
+    if is_details:
+        print(line)
 
     for wallet_string in wallets_array:
-        available, claimable = workers_statistic(index, wallet_string.address, snw_contract_address, abi_data, wallet_string.address_pk)
+        available, claimable = workers_statistic(index, wallet_string.address, snw_contract_address, abi_data, wallet_string.address_pk, is_details)
         total_available += available
         total_claimable += claimable
         index += 1
@@ -86,7 +90,83 @@ def check_player(players_array):
     else:
         return False
 
-def workers_statistic(index, wallet_address, contract_address, abi_data, private_key):
+def get_worker_details(worker_info):
+    total_time = (worker_info[1] - worker_info[0]) / 60 / 60 / 24
+    year_apr = worker_info[3]
+    period_roi = worker_info[4]
+    current_earn = round(worker_info[5] / 1000000000000000000, 2)
+    total_earn = (25 / 100 * period_roi)
+    remaining_days = round((1 - (current_earn / total_earn)) * total_time, 2)
+
+
+    results_days = 'Remaining Days: ' + str(remaining_days) + '\n'
+    results_ROI = 'ROI: ' + str(period_roi) + '% per ' + str(total_time) + ' Days' + '\n'
+    results_earns = 'Earnings: ' + str(current_earn) + '/' + str(total_earn) + ' BSW' + '\n'
+    results_APR = 'APR: ' + str(year_apr) + '%' + '\n'
+    
+    results = results_days + results_ROI + results_earns + results_APR
+
+    return results
+
+def get_detailed_stats(index, wallet_address, users_array):
+    available, claimable = 0, 0
+
+    if len(users_array) == 2:
+        print(str(index) + '. ' + wallet_address + ' - Statistics!')
+        for i in range(2):
+            if check_player(users_array[i]):
+                claimable += 1
+            worker_info = users_array[i]
+            print('\nPlayer ' + str(i + 1) + ' Info: ')
+            print(get_worker_details(worker_info))
+        print('To Buy: 0 & To Claim: ' + str(claimable))
+        print(line)
+    elif len(users_array) == 1:
+        print(str(index) + '. ' + wallet_address + ' - Statistics!')
+        worker_info = users_array[0]
+        print('\nPlayer ' + str(i + 1) + ' Info: ')
+        print(get_worker_details(worker_info))
+        if check_player(users_array[0]):
+            print('To Buy: 1 & To Claim: 1\n')
+            claimable, available = 1, 1
+        else:
+            print('To Buy: 1 & To Claim: 0\n')
+            available = 1
+        print(line)
+    elif len(users_array) == 0:
+        print(str(index) + '. ' + wallet_address + ' - Statistics!')
+        print('To Buy: 2 & To Claim: 0')
+        available = 2
+        print(line)
+    else:
+        print(str(index) + '. ' + ' - Something was wrong!')
+        print(line)
+    return available, claimable
+
+def get_custom_stats(index, wallet_address, users_array):
+    available, claimable = 0, 0
+
+    if len(users_array) == 2:
+        for i in range(2):
+            if check_player(users_array[i]):
+                claimable += 1
+        print(str(index) + '. ' + wallet_address + ' - To Buy: 0 & To Claim: ' + str(claimable))
+    elif len(users_array) == 1:
+        if check_player(users_array[0]):
+            print(str(index) + '. ' + wallet_address + ' - To Buy: 1 & To Claim: 1')
+            claimable, available = 1, 1
+        else:
+            print(str(index) + '. ' + wallet_address + ' - To Buy: 1 & To Claim: 0')
+            available = 1
+    elif len(users_array) == 0:
+        print(str(index) + '. ' + wallet_address + ' - To Buy: 2 & To Claim: 0')
+        available = 2
+    else:
+        print(str(index) + '. ' + ' - Something was wrong!')
+
+    return available, claimable
+
+def workers_statistic(index, wallet_address, contract_address, abi_data, private_key, is_details):
     web3 = Web3(Web3.HTTPProvider(bsc_network))
     #print(str(index) + '. ' + wallet_address + ' - Connection: ' + str(web3.isConnected()))
     available, claimable = 0, 0
@@ -95,26 +175,14 @@ def workers_statistic(index, wallet_address, contract_address, abi_data, private
     wallet_address = web3.toChecksumAddress(wallet_address)
     contract = web3.eth.contract(address=contract_address, abi=abi_data)
 
-    contracts_tx = contract.functions.getUserInfo(wallet_address).call()
-    players_count = len(contracts_tx[0][9])
+    contracts_response = contract.functions.getUserInfo(wallet_address).call()
+    users_array = contracts_response[0][9]
+    players_count = len(users_array)
 
-    if players_count == 2:
-        for i in range(2):
-            if check_player(contracts_tx[0][9][i]):
-                claimable += 1
-        print(str(index) + '. ' + wallet_address + ' - To Buy: 0 & To Claim: ' + str(claimable))
-    elif players_count == 1:
-        if check_player(contracts_tx[0][9][0]):
-            print(str(index) + '. ' + wallet_address + ' - To Buy: 1 & To Claim: 1')
-            claimable, available = 1, 1
-        else:
-            print(str(index) + '. ' + wallet_address + ' - To Buy: 1 & To Claim: 0')
-            available = 1
-    elif players_count == 0:
-        print(str(index) + '. ' + wallet_address + ' - To Buy: 2 & To Claim: 0')
-        available = 2
+    if is_details:
+        available, claimable = get_detailed_stats(index, wallet_address, users_array)
     else:
-        print(str(index) + '. ' + ' - Something was wrong!')
+        available, claimable = get_custom_stats(index, wallet_address, users_array)
 
     return available, claimable
 # STATISTIC FUNCTIONS
@@ -300,7 +368,16 @@ def main_menu(abi_data, wallets):
 
     # Option 1
     if user_option == '1':
-        statistic_option(abi_data, wallets)
+        print('Please, Choose statistic Option (1-3): ')
+        print('1. Statistic with Details!')
+        print('2. Statistic without Details!')
+        print('3. Go to Main Menu!')
+        user_stat_option = input()
+        clear_history()
+        if user_stat_option == '1':
+            statistic_option(abi_data, wallets, True)
+        elif user_stat_option == '2':
+            statistic_option(abi_data, wallets, False)
         main_menu(abi_data, wallets)
         return
     # Option 1
