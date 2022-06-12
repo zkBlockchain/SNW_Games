@@ -18,7 +18,7 @@ class wallet_data:
         self.address_pk = address_pk
 # WALLET DATA OBJECT
 
-# GLOBAL
+# GLOBAL VARIABLES
 bsc_network = 'https://bsc-dataseed1.binance.org'
 biswap_token_address = '0x965F527D9159dCe6288a2219DB51fc6Eef120dD1'
 
@@ -27,9 +27,9 @@ biswap_hp_abi_address = '0xa4b20183039b2F9881621C3A03732fBF0bfdff10'
 
 snw_contract_address = '0xF28743d962AD110d1f4C4266e5E48E94FbD85285'
 snw_abi_address = '0x98d9798511d60103834a8b117dd7f51b8f8cd0d6'
-# GLOBAL
+# GLOBAL VARIABLES
 
-# FUNCTIONS
+# MAIN FUNCTIONS
 def get_abi(abi_address):
     api_bsc = 'https://api.bscscan.com/api'
     API_ENDPOINT = api_bsc + '?module=contract&action=getabi&address=' + str(abi_address)
@@ -119,7 +119,7 @@ def deposit_hp(contract_address, deposit_size, date_time, wallet_address, privat
 
     web3.eth.wait_for_transaction_receipt(tx_hash)
     print(wallet_address + ' - Deposit tx Done! - ' + get_time())
-
+# MAIN FUNCTIONS
 
 def main():
     mnemonic = input('Please, Enter your Mnemonic: ')
