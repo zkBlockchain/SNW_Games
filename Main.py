@@ -28,7 +28,7 @@ snw_abi_address = '0x98d9798511d60103834a8b117dd7f51b8f8cd0d6'
 summary_info = 0
 summary_claim = 0
 
-line = '-----------------------------------------------------------'
+line = '------------------------------------------------------------'
 # GLOBAL
 
 # COMMON FUNCTIONS
@@ -112,29 +112,29 @@ def get_detailed_stats(index, wallet_address, users_array):
     available, claimable = 0, 0
 
     if len(users_array) == 2:
-        print(str(index) + '. ' + wallet_address + ' - Statistics!')
+        print(str(index) + '. ' + wallet_address + ' - Statistics!\n')
         for i in range(2):
             if check_player(users_array[i]):
                 claimable += 1
             worker_info = users_array[i]
-            print('\nPlayer ' + str(i + 1) + ' Info: ')
+            print('Player ' + str(i + 1) + ' Info: ')
             print(get_worker_details(worker_info))
         print('To Buy: 0 & To Claim: ' + str(claimable))
         print(line)
     elif len(users_array) == 1:
-        print(str(index) + '. ' + wallet_address + ' - Statistics!')
+        print(str(index) + '. ' + wallet_address + ' - Statistics!\n')
         worker_info = users_array[0]
-        print('\nPlayer ' + str(i + 1) + ' Info: ')
+        print('Player 1 Info: ')
         print(get_worker_details(worker_info))
         if check_player(users_array[0]):
-            print('To Buy: 1 & To Claim: 1\n')
+            print('To Buy: 1 & To Claim: 1')
             claimable, available = 1, 1
         else:
-            print('To Buy: 1 & To Claim: 0\n')
+            print('To Buy: 1 & To Claim: 0')
             available = 1
         print(line)
     elif len(users_array) == 0:
-        print(str(index) + '. ' + wallet_address + ' - Statistics!')
+        print(str(index) + '. ' + wallet_address + ' - Statistics!\n')
         print('To Buy: 2 & To Claim: 0')
         available = 2
         print(line)
