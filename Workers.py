@@ -167,7 +167,6 @@ def get_custom_stats(index, wallet_address, users_array):
 
 def workers_statistic(index, wallet_address, contract_address, abi_data, private_key, is_details):
     web3 = Web3(Web3.HTTPProvider(bsc_network))
-    #print(str(index) + '. ' + wallet_address + ' - Connection: ' + str(web3.isConnected()))
     available, claimable = 0, 0
 
     contract_address = web3.toChecksumAddress(contract_address)
@@ -209,7 +208,6 @@ def tx_claim_workers(wallet_address, contract_address, abi_data, player_id, priv
     print(wallet_address + ' - Claiming Player (' + str(player_id) + ')!')
 
     web3 = Web3(Web3.HTTPProvider(bsc_network))
-    #print(wallet_address + ' - Claiming Connection: ' + str(web3.isConnected()))
     contract_address = web3.toChecksumAddress(contract_address)
     wallet_address = web3.toChecksumAddress(wallet_address)
     contract = web3.eth.contract(address=contract_address, abi=abi_data)
@@ -226,17 +224,12 @@ def tx_claim_workers(wallet_address, contract_address, abi_data, player_id, priv
     })
 
     print(wallet_address + ' - Claiming tx is ready! - ' + get_time())
-    #print(wallet_address + ' - Claiming Awaiting time!')
-
-    #pause.until(date_time) # year month day hour minute seconds
-
     sign_txn = web3.eth.account.sign_transaction(contracts_response, private_key)
     txn_hash = web3.eth.send_raw_transaction(sign_txn.rawTransaction)
     print(wallet_address + ' - Claiming tx is sent! - ' + get_time())
 
     web3.eth.wait_for_transaction_receipt(txn_hash)
     print(wallet_address + ' - Claiming is Done! - ' + get_time())
-    #print(wallet_address + ' - Claiming Done!')
 # CLAIM FUNCTIONS
 
 # HIRE FUNCTIONS
@@ -257,21 +250,18 @@ def workers_queue(wallet_address, contract_address, abi_data, private_key, date_
     web3 = Web3(Web3.HTTPProvider(bsc_network))
     wallet_address = web3.toChecksumAddress(wallet_address)
     nonce = web3.eth.get_transaction_count(wallet_address)
-    inc = 0
 
     for i in range(workers):
-        tx_new_worker(wallet_address, contract_address, abi_data, private_key, date_time, nonce + inc)
-        inc += 1
+        tx_new_worker(wallet_address, contract_address, abi_data, private_key, date_time, nonce)
+        nonce += 1
 
 def tx_new_worker(wallet_address, contract_address, abi_data, private_key, date_time, nonce):
     web3 = Web3(Web3.HTTPProvider(bsc_network))
-    #print(wallet_address + ' - Hiring Connection: ' + str(web3.isConnected()))
     contract_address = web3.toChecksumAddress(contract_address)
     wallet_address = web3.toChecksumAddress(wallet_address)
     contract = web3.eth.contract(address=contract_address, abi=abi_data)
 
     value = web3.toWei(0, 'ether')
-    #nonce = web3.eth.get_transaction_count(wallet_address)
 
     contracts_response = contract.functions.hireWorker().buildTransaction({
         'chainId': 56,
