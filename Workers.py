@@ -2,9 +2,8 @@ from web3 import Web3
 from datetime import datetime
 from crypto import HDPrivateKey, HDKey
 
-import subprocess
-import requests, json, config, getpass
-import os, threading, pause
+import requests, json, getpass
+import os, subprocess, threading, pause
 
 # WALLET DATA OBJECT
 class wallet_data:

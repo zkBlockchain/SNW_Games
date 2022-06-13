@@ -2,12 +2,9 @@ from web3 import Web3
 from datetime import datetime
 from crypto import HDPrivateKey, HDKey
 
-import json
-import config
-import requests
+import json, requests
+import time, pause
 import threading
-import pause
-import time
 
 # WALLET DATA OBJECT
 class wallet_data:
