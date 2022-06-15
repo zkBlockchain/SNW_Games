@@ -325,7 +325,7 @@ def run_workers_queue(wallet_address, contract_address, abi_data, private_key, d
         if option:
             print(wallet_address + ' - 1 Player! Checking 1!')
             if is_claim_worker(contracts_response[0][9][0]):
-                claims_queue(wallet_address, contract_address, abi_data, 0, private_key)
+                claims_queue(wallet_address, contract_address, abi_data, 0, private_key, 0)
                 summary_claim += 1
             else:
                 print(wallet_address + ' - Nothing to Claim (0)!')
