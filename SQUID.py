@@ -6,6 +6,7 @@ import json, requests
 import time, pause, getpass
 import os, sys, threading
 
+
 # WALLET DATA OBJECT
 class wallet_data:
     address = ''
@@ -14,6 +15,7 @@ class wallet_data:
         self.address = address
         self.address_pk = address_pk
 # WALLET DATA OBJECT
+
 
 # GLOBAL VARIABLES
 bsc_network = 'https://bsc-dataseed1.binance.org'
@@ -27,6 +29,7 @@ players_contract_abi_address = '0xe9f688c064ae0f0668baf0558352075b83a1c4f1'
 contract_version = 2 # Version 1 is ENDED!
 # GLOBAL VARIABLES
 
+
 # WINDOWS FUNCTIONS (CTRL+C to Exit)
 def handler(a,b=None):
     sys.exit(1)
@@ -37,17 +40,20 @@ def install_handler():
         win32api.SetConsoleCtrlHandler(handler, True)
 # WINDOWS FUNCTIONS (CTRL+C to Exit)
 
+
 # COMMON FUNCTIONS
 def get_time():
 	now = datetime.now()
 	current_time = now.strftime('%H:%M:%S')
 	return current_time
 
+
 def clear_history():
     if(os.name == 'posix'):
         os.system('clear')
     else:
         os.system('cls')
+
 
 def get_abi(abi):
 	api_bsc = 'https://api.bscscan.com/api'
@@ -57,6 +63,7 @@ def get_abi(abi):
 	abi_data = json.loads(response['result'])
 	return abi_data
 
+
 def get_abi_data():
 	print('Receiving ABI Data of contracts, Please wait!')
 	abi_player_data = get_abi(players_contract_abi_address)
@@ -64,6 +71,7 @@ def get_abi_data():
 	abi_game_data = get_abi(snw_game_contract_abi_address)
 
 	return abi_game_data, abi_player_data
+
 
 def get_run_time():
     time_string = input('Please, Enter Date to Buy (01-01-2000 00:00:00): ')
@@ -76,6 +84,7 @@ def get_run_time():
     date_time = datetime.strptime(time_string,"%d-%m-%Y %H:%M:%S")
 
     return date_time
+
 
 def generate_wallets(amount, mnemonic):
     master_key = HDPrivateKey.master_key_from_mnemonic(mnemonic)
@@ -95,12 +104,14 @@ def generate_wallets(amount, mnemonic):
     return wallets
 # COMMON FUNCTIONS
 
+
 # GAME FUNCTIONS
 def get_game_id(se):
 	se_int = int(se / 1000000000000000000000)
 	if se_int > 7:
 		se_int = 7
 	return se_int - 1
+
 
 def get_user_se(wallet_address, abi_data):
 	web3 = Web3(Web3.HTTPProvider(bsc_network))
@@ -112,6 +123,7 @@ def get_user_se(wallet_address, abi_data):
 	user_se_max = contract.functions.totalSEAmount(wallet_address).call()
 
 	return user_se, user_se_max
+
 
 def get_user_players(wallet_address, abi_data):
 	user_players = []
@@ -127,6 +139,7 @@ def get_user_players(wallet_address, abi_data):
 		user_players.append(player_info[0])
 
 	return user_players
+
 
 def play_game(wallet_address, private_key, players_id, abi_data, game_index):
 	print(wallet_address + ' - Creating Transaction! - ' + get_time())
@@ -155,6 +168,7 @@ def play_game(wallet_address, private_key, players_id, abi_data, game_index):
 	web3.eth.wait_for_transaction_receipt(txn_hash)
 	print(wallet_address + ' - Transaction is Done! - ' + get_time())
 
+
 def run_game_cycle(wallets_array, abi_player_data, abi_game_data, sleep_time):
 	for wallet_string in wallets_array:
 		user_se, user_se_max = get_user_se(wallet_string.address, abi_player_data)
@@ -175,6 +189,7 @@ def run_game_cycle(wallets_array, abi_player_data, abi_game_data, sleep_time):
 		time.sleep(sleep_time)
 	run_game_cycle(wallets_array, abi_player_data, abi_game_data, sleep_time)
 # GAME FUNCTIONS
+
 
 # NEW CONTRACTS FUNCTION
 def get_new_contracts(abi_data, wallet_address, private_key, players, date_time):
@@ -209,7 +224,7 @@ def get_new_contracts(abi_data, wallet_address, private_key, players, date_time)
 	print(wallet_address + ' - Buy is Done! - ' + get_time())
 # NEW CONTRACTS FUNCTION
 
-# MAIN PROGRAM FUNCTION
+
 def main():
 	install_handler()
 
@@ -243,9 +258,9 @@ def main():
 			new_threads = threading.Thread(target=get_new_contracts, 
 				args=(abi_game_data, wallet_info.address, wallet_info.address_pk, user_players, date_time,))
 			new_threads.start()
-# MAIN PROGRAM FUNCTION
 
-# STARTING PROGRAM
+
 if __name__ == '__main__':
 	main()
-# STARTING PROGRAM
+
+

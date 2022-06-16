@@ -6,6 +6,7 @@ import json, requests
 import time, pause
 import threading
 
+
 # WALLET DATA OBJECT
 class wallet_data:
     address = ''
@@ -14,6 +15,7 @@ class wallet_data:
         self.address = address
         self.address_pk = address_pk
 # WALLET DATA OBJECT
+
 
 # GLOBAL VARIABLES
 bsc_network = 'https://bsc-dataseed1.binance.org'
@@ -26,6 +28,7 @@ snw_contract_address = '0xF28743d962AD110d1f4C4266e5E48E94FbD85285'
 snw_abi_address = '0x98d9798511d60103834a8b117dd7f51b8f8cd0d6'
 # GLOBAL VARIABLES
 
+
 # MAIN FUNCTIONS
 def get_abi(abi_address):
     api_bsc = 'https://api.bscscan.com/api'
@@ -35,10 +38,12 @@ def get_abi(abi_address):
     abi_data = json.loads(response['result'])
     return abi_data
 
+
 def get_time():
     now = datetime.now()
     current_time = now.strftime('%H:%M:%S')
     return current_time
+
 
 def generate_wallets(amount, mnemonic):
     master_key = HDPrivateKey.master_key_from_mnemonic(mnemonic)
@@ -56,6 +61,7 @@ def generate_wallets(amount, mnemonic):
         wallet_object = wallet_data(address, address_pk)
         wallets.append(wallet_object)
     return wallets
+
 
 def approve(token, contract_address, wallet_address, private_key, abi_data):
     web3 = Web3(Web3.HTTPProvider(bsc_network))
@@ -83,6 +89,7 @@ def approve(token, contract_address, wallet_address, private_key, abi_data):
 
     web3.eth.wait_for_transaction_receipt(tx_hash)
     print(wallet_address + ' - Approve tx Done!')
+
 
 def deposit_hp(contract_address, deposit_size, date_time, wallet_address, private_key, abi_data):
     web3 = Web3(Web3.HTTPProvider(bsc_network))
@@ -118,6 +125,7 @@ def deposit_hp(contract_address, deposit_size, date_time, wallet_address, privat
     print(wallet_address + ' - Deposit tx Done! - ' + get_time())
 # MAIN FUNCTIONS
 
+
 def main():
     mnemonic = input('Please, Enter your Mnemonic: ')
     wallet_amounts = int(input('Please, Enter count of Wallets: '))
@@ -146,6 +154,7 @@ def main():
             deposit_hp(biswap_hp_contract_address, deposit_size, date_time, wallet_string.address, wallet_string.address_pk, abi_data_hp)
     else:
         print('Something went wrong!')
+
 
 if __name__ == '__main__':
     main()
