@@ -5,6 +5,7 @@ from crypto import HDPrivateKey, HDKey
 import requests, json, getpass
 import os, subprocess, threading, pause
 
+
 # WALLET DATA OBJECT
 class wallet_data:
     address = ''
@@ -13,6 +14,7 @@ class wallet_data:
         self.address = address
         self.address_pk = address_pk
 # WALLET DATA OBJECT
+
 
 # GLOBAL
 bsc_network = 'https://bsc-dataseed1.binance.org'
@@ -30,6 +32,7 @@ summary_claim = 0
 line = '------------------------------------------------------------'
 # GLOBAL
 
+
 # COMMON FUNCTIONS
 def get_abi(abi_address):
     api_bsc = 'https://api.bscscan.com/api'
@@ -39,16 +42,19 @@ def get_abi(abi_address):
     abi_data = json.loads(response['result'])
     return abi_data
 
+
 def get_time():
     now = datetime.now()
     current_time = now.strftime('%H:%M:%S')
     return current_time
+
 
 def clear_history():
     if(os.name == 'posix'):
         os.system('clear')
     else:
         os.system('cls')
+
 
 def generate_wallets(amount, mnemonic):
     master_key = HDPrivateKey.master_key_from_mnemonic(mnemonic)
@@ -68,6 +74,7 @@ def generate_wallets(amount, mnemonic):
     return wallets
 # COMMON FUNCTIONS
 
+
 # STATISTIC FUNCTIONS
 def statistic_option(abi_data, wallets_array, is_details):
     index, total_available, total_claimable = 1, 0, 0
@@ -83,11 +90,13 @@ def statistic_option(abi_data, wallets_array, is_details):
     print('\nSummary Available: ' + str(total_available))
     print('Summary Claimable: ' + str(total_claimable) + '\n')
 
+
 def check_player(players_array):
     if players_array[0] == 0 and players_array[1] == 0:
         return True
     else:
         return False
+
 
 def get_worker_details(worker_info):
     total_time = (worker_info[1] - worker_info[0]) / 60 / 60 / 24
@@ -106,6 +115,7 @@ def get_worker_details(worker_info):
     results = results_days + results_ROI + results_earns + results_APR
 
     return results
+
 
 def get_detailed_stats(index, wallet_address, users_array):
     available, claimable = 0, 0
@@ -142,6 +152,7 @@ def get_detailed_stats(index, wallet_address, users_array):
         print(line)
     return available, claimable
 
+
 def get_custom_stats(index, wallet_address, users_array):
     available, claimable = 0, 0
 
@@ -165,6 +176,7 @@ def get_custom_stats(index, wallet_address, users_array):
 
     return available, claimable
 
+
 def workers_statistic(index, wallet_address, contract_address, abi_data, private_key, is_details):
     web3 = Web3(Web3.HTTPProvider(bsc_network))
     available, claimable = 0, 0
@@ -185,12 +197,14 @@ def workers_statistic(index, wallet_address, contract_address, abi_data, private
     return available, claimable
 # STATISTIC FUNCTIONS
 
+
 # CLAIM FUNCTIONS
 def is_claim_worker(players_array):
     if players_array[0] == 0 and players_array[1] == 0:
         return True
     else:
         return False
+
 
 def claims_queue(wallet_address, contract_address, abi_data, players, private_key, claim_player_id):
     web3 = Web3(Web3.HTTPProvider(bsc_network))
@@ -203,6 +217,7 @@ def claims_queue(wallet_address, contract_address, abi_data, players, private_ke
         elif players == 0:
             tx_claim_workers(wallet_address, contract_address, abi_data, claim_player_id, private_key, nonce)
         nonce += 1
+
 
 def tx_claim_workers(wallet_address, contract_address, abi_data, player_id, private_key, nonce):
     print(wallet_address + ' - Claiming Player (' + str(player_id) + ')!')
@@ -232,6 +247,7 @@ def tx_claim_workers(wallet_address, contract_address, abi_data, player_id, priv
     print(wallet_address + ' - Claiming is Done! - ' + get_time())
 # CLAIM FUNCTIONS
 
+
 # HIRE FUNCTIONS
 def get_run_time(option):
     if option == False:
@@ -246,6 +262,7 @@ def get_run_time(option):
 
         return date_time
 
+
 def workers_queue(wallet_address, contract_address, abi_data, private_key, date_time, workers):
     web3 = Web3(Web3.HTTPProvider(bsc_network))
     wallet_address = web3.toChecksumAddress(wallet_address)
@@ -254,6 +271,7 @@ def workers_queue(wallet_address, contract_address, abi_data, private_key, date_
     for i in range(workers):
         tx_new_worker(wallet_address, contract_address, abi_data, private_key, date_time, nonce)
         nonce += 1
+
 
 def tx_new_worker(wallet_address, contract_address, abi_data, private_key, date_time, nonce):
     web3 = Web3(Web3.HTTPProvider(bsc_network))
@@ -284,17 +302,17 @@ def tx_new_worker(wallet_address, contract_address, abi_data, private_key, date_
     web3.eth.wait_for_transaction_receipt(txn_hash)
     print(wallet_address + ' - Hiring is Done! - ' + get_time())
 
+
 def new_worker_threads(wallet_address, contract_address, abi_data, private_key, date_time, workers):
     new_threads = threading.Thread(target=workers_queue, args=(wallet_address, contract_address, abi_data, private_key, date_time, workers,))
     new_threads.start()
 # HIRE FUNCTIONS
 
+
 # MAIN COMMON FUNCTIONS
 def run_workers_queue(wallet_address, contract_address, abi_data, private_key, date_time, option):
-    global summary_info
-    global summary_claim
+    summary_info = 0
     web3 = Web3(Web3.HTTPProvider(bsc_network))
-    #print(wallet_address + ' - Checking Connection: ' + str(web3.isConnected()))
 
     contract_address = web3.toChecksumAddress(contract_address)
     wallet_address = web3.toChecksumAddress(wallet_address)
@@ -311,7 +329,7 @@ def run_workers_queue(wallet_address, contract_address, abi_data, private_key, d
             for i in range(2):
                 if is_claim_worker(contracts_response[0][9][i]):
                     claim_counter += 1
-                    summary_claim += 1
+                    summary_info += 1
                     claim_player_id = i
 
             if claim_counter > -1:
@@ -326,13 +344,13 @@ def run_workers_queue(wallet_address, contract_address, abi_data, private_key, d
             print(wallet_address + ' - 1 Player! Checking 1!')
             if is_claim_worker(contracts_response[0][9][0]):
                 claims_queue(wallet_address, contract_address, abi_data, 0, private_key, 0)
-                summary_claim += 1
+                summary_info += 1
             else:
                 print(wallet_address + ' - Nothing to Claim (0)!')
         else:
             summary_info += 1
             workers += 1
-            print(wallet_address + ' - 1 Player! Buy 1!') # Check 1 player => buy 1 or 2 contracts!
+            print(wallet_address + ' - 1 Player! Buy 1!')
             new_worker_threads(wallet_address, contract_address, abi_data, private_key, date_time, workers)
     elif workers_count == 0:
         if option:
@@ -346,78 +364,87 @@ def run_workers_queue(wallet_address, contract_address, abi_data, private_key, d
     else:
         print('Something Wrong!')
 
-def main_menu(abi_data, wallets):
-    print('Please, Choose your Option (1-4): ')
-    print('1. Checking workers Statistic!')
-    print('2. Claiming Available Workers!')
-    print('3. Hiring New Players!')
-    print('4. Exit from Application!')
-    user_option = input()
-    clear_history()
+    return summary_info
 
-    # Option 1
-    if user_option == '1':
-        print('Please, Choose statistic Option (1-3): ')
-        print('1. Statistic with Details!')
-        print('2. Statistic without Details!')
-        print('3. Go to Main Menu!')
-        user_stat_option = input()
-        clear_history()
-        if user_stat_option == '1':
-            statistic_option(abi_data, wallets, True)
-        elif user_stat_option == '2':
-            statistic_option(abi_data, wallets, False)
-        main_menu(abi_data, wallets)
-        return
-    # Option 1
 
-    # Option 2
-    option = True # False - Hair, True - Claim
-    # Option 2
-
-    # Option 3
-    if user_option == '3':
-        option = False
-    date_time = get_run_time(option)
-    # Option 3
-
-    # Option 4
-    if user_option == '4':
-        exit()
-    # Option 4
-
-    # Back if wrong option!
-    if user_option != '2' and option == True:
-        main_menu(abi_data, wallets)
-        return
-    # Back if wrong option!
-
-    # Run Claim/Hire option
-    for wallet_string in wallets:
-        run_workers_queue(wallet_string.address, snw_contract_address, abi_data, wallet_string.address_pk, date_time, option)
-    # Run Claim/Hire option
-
-    # Results
-    if option:
-        print('\nClaiming Statistic: ' + str(summary_claim) + '\n')
-        main_menu(abi_data, wallets)
-    else:
-        print('\nSummary to Buy: ' + str(summary_info) + '\n')
-# MAIN COMMON FUNCTIONS
-
-def main():
-    global summary_info
-    global summary_claim
-    summary_info = 0
-    summary_claim = 0
-
-    abi_data = get_abi(snw_abi_address)
-
+def get_wallets():
     mnemonic = getpass.getpass('Please, Enter your Mnemonic: ')
     wallet_amounts = int(input('Please, Enter count of Wallets: '))
     wallets = generate_wallets(wallet_amounts, mnemonic)
+    return wallets
+
+
+def user_option_check(abi_data, wallets):
+    print('Please, Choose statistic Option (1-3): ')
+    print('1. Statistic with Details!')
+    print('2. Statistic without Details!')
+    print('3. Go to Main Menu!')
+    user_stat_option = input()
+    clear_history()
+    if user_stat_option == '1':
+        statistic_option(abi_data, wallets, True)
+    elif user_stat_option == '2':
+        statistic_option(abi_data, wallets, False)
+    main_menu(abi_data, wallets)
+    return
+
+
+def user_main_option(abi_data, wallets, option):
+    summary_info = 0
+    date_time = get_run_time(option)
+    for wallet_string in wallets:
+        results = run_workers_queue(wallet_string.address, snw_contract_address, abi_data, wallet_string.address_pk, date_time, option)
+        summary_info += results
+
+    if option:
+        print('\nClaiming Statistic: ' + str(summary_info) + '\n')
+        main_menu(abi_data, wallets)
+    else:
+        print('\nSummary to Buy: ' + str(summary_info) + '\n')
+    main_menu(abi_data, wallets)
+
+
+def main_menu(abi_data, wallets):
+    if wallets == []:
+        wallets = get_wallets()
+
+    print('Please, Choose your Option (1-5): ')
+    print('1. Checking workers Statistic!')
+    print('2. Claiming Available Workers!')
+    print('3. Hiring New Players!')
+    print('4. Use Another Mnemonic!')
+    print('5. Exit from Application!')
+    user_option = input()
+    clear_history()
+
+    if user_option == '1':
+        user_option_check(abi_data, wallets)
+        return
+
+    if user_option == '2':
+        user_main_option(abi_data, wallets, True)
+        return
+
+    if user_option == '3':
+        user_main_option(abi_data, wallets, False)
+        return
+
+    if user_option == '4':
+        main_menu(abi_data, [])
+        return
+
+    if user_option == '5':
+        exit()
 
     main_menu(abi_data, wallets)
+    return
+# MAIN COMMON FUNCTIONS
+
+
+def main():
+    abi_data = get_abi(snw_abi_address)
+    main_menu(abi_data, [])
+
 
 if __name__ == '__main__':
     main()
