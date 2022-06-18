@@ -213,7 +213,7 @@ def claims_queue(wallet_address, contract_address, abi_data, players, private_ke
 
     for i in range(players + 1):
         if players == 1:
-            tx_claim_workers(wallet_address, contract_address, abi_data, i, private_key, nonce)
+            tx_claim_workers(wallet_address, contract_address, abi_data, 0, private_key, nonce)
         elif players == 0:
             tx_claim_workers(wallet_address, contract_address, abi_data, claim_player_id, private_key, nonce)
         nonce += 1
