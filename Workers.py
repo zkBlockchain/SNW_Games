@@ -26,9 +26,6 @@ biswap_hp_abi_address = '0xa4b20183039b2F9881621C3A03732fBF0bfdff10'
 snw_contract_address = '0xF28743d962AD110d1f4C4266e5E48E94FbD85285'
 snw_abi_address = '0x98d9798511d60103834a8b117dd7f51b8f8cd0d6'
 
-summary_info = 0
-summary_claim = 0
-
 line = '------------------------------------------------------------'
 # GLOBAL
 
@@ -78,17 +75,32 @@ def generate_wallets(amount, mnemonic):
 # STATISTIC FUNCTIONS
 def statistic_option(abi_data, wallets_array, is_details):
     index, total_available, total_claimable = 1, 0, 0
+    summary_less_day, summary_less_three, summary_less_week = 0, 0, 0
+
     if is_details:
         print(line)
 
     for wallet_string in wallets_array:
-        available, claimable = workers_statistic(index, wallet_string.address, snw_contract_address, abi_data, wallet_string.address_pk, is_details)
+        if is_details:
+            available, claimable, sld, slt, slw = \
+                workers_statistic(index, wallet_string.address, snw_contract_address, abi_data, wallet_string.address_pk, is_details)
+            summary_less_day += sld
+            summary_less_three += slt
+            summary_less_week += slw
+        else:
+            available, claimable = \
+                workers_statistic(index, wallet_string.address, snw_contract_address, abi_data, wallet_string.address_pk, is_details)
         total_available += available
         total_claimable += claimable
+
         index += 1
 
     print('\nSummary Available: ' + str(total_available))
     print('Summary Claimable: ' + str(total_claimable) + '\n')
+    if is_details:
+        print('Summary Less 7 Days: ' + str(summary_less_week))
+        print('Summary Less 3 Days: ' + str(summary_less_three))
+        print('Summary Less 1 Days: ' + str(summary_less_day) + '\n')
 
 
 def check_player(players_array):
@@ -99,6 +111,10 @@ def check_player(players_array):
 
 
 def get_worker_details(worker_info):
+    summary_less_day = 0
+    summary_less_three = 0
+    summary_less_week = 0
+
     total_time = (worker_info[1] - worker_info[0]) / 60 / 60 / 24
     year_apr = worker_info[3]
     period_roi = worker_info[4]
@@ -106,6 +122,12 @@ def get_worker_details(worker_info):
     total_earn = (25 / 100 * period_roi)
     remaining_days = round((1 - (current_earn / total_earn)) * total_time, 2)
 
+    if remaining_days < 1:
+        summary_less_day += 1
+    elif remaining_days < 3:
+        summary_less_three += 1
+    elif remaining_days < 7:
+        summary_less_week += 1
 
     results_days = 'Remaining Days: ' + str(remaining_days) + '\n'
     results_ROI = 'ROI: ' + str(period_roi) + '% per ' + str(total_time) + ' Days' + '\n'
@@ -114,11 +136,14 @@ def get_worker_details(worker_info):
     
     results = results_days + results_ROI + results_earns + results_APR
 
-    return results
+    return results, summary_less_day, summary_less_three, summary_less_week
 
 
 def get_detailed_stats(index, wallet_address, users_array):
     available, claimable = 0, 0
+    summary_less_day = 0
+    summary_less_three = 0
+    summary_less_week = 0
 
     if len(users_array) == 2:
         print(str(index) + '. ' + wallet_address + ' - Statistics!\n')
@@ -127,14 +152,22 @@ def get_detailed_stats(index, wallet_address, users_array):
                 claimable += 1
             worker_info = users_array[i]
             print('Player ' + str(i + 1) + ' Info: ')
-            print(get_worker_details(worker_info))
+            results, sld, slt, slw = get_worker_details(worker_info)
+            summary_less_day += sld
+            summary_less_three += slt
+            summary_less_week += slw
+            print(results)
         print('To Buy: 0 & To Claim: ' + str(claimable))
         print(line)
     elif len(users_array) == 1:
         print(str(index) + '. ' + wallet_address + ' - Statistics!\n')
         worker_info = users_array[0]
         print('Player 1 Info: ')
-        print(get_worker_details(worker_info))
+        results, sld, slt, slw = get_worker_details(worker_info)
+        summary_less_day += sld
+        summary_less_three += slt
+        summary_less_week += slw
+        print(results)
         if check_player(users_array[0]):
             print('To Buy: 1 & To Claim: 1')
             claimable, available = 1, 1
@@ -150,7 +183,7 @@ def get_detailed_stats(index, wallet_address, users_array):
     else:
         print(str(index) + '. ' + ' - Something was wrong!')
         print(line)
-    return available, claimable
+    return available, claimable, summary_less_day, summary_less_three, summary_less_week
 
 
 def get_custom_stats(index, wallet_address, users_array):
@@ -190,9 +223,9 @@ def workers_statistic(index, wallet_address, contract_address, abi_data, private
     players_count = len(users_array)
 
     if is_details:
-        available, claimable = get_detailed_stats(index, wallet_address, users_array)
+        return get_detailed_stats(index, wallet_address, users_array)
     else:
-        available, claimable = get_custom_stats(index, wallet_address, users_array)
+        return get_custom_stats(index, wallet_address, users_array)
 
     return available, claimable
 # STATISTIC FUNCTIONS
