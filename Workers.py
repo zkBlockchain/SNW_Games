@@ -302,7 +302,8 @@ def workers_queue(wallet_address, contract_address, abi_data, private_key, date_
     nonce = web3.eth.get_transaction_count(wallet_address)
 
     for i in range(workers):
-        tx_new_worker(wallet_address, contract_address, abi_data, private_key, date_time, nonce)
+        new_hire_threads = threading.Thread(target=tx_new_worker, daemon=True, args=(wallet_address, contract_address, abi_data, private_key, date_time, nonce,))
+        new_hire_threads.start()
         nonce += 1
 
 
@@ -337,7 +338,7 @@ def tx_new_worker(wallet_address, contract_address, abi_data, private_key, date_
 
 
 def new_worker_threads(wallet_address, contract_address, abi_data, private_key, date_time, workers):
-    new_threads = threading.Thread(target=workers_queue, args=(wallet_address, contract_address, abi_data, private_key, date_time, workers,))
+    new_threads = threading.Thread(target=workers_queue, daemon=True, args=(wallet_address, contract_address, abi_data, private_key, date_time, workers,))
     new_threads.start()
 # HIRE FUNCTIONS
 
