@@ -27,6 +27,8 @@ snw_contract_address = '0xF28743d962AD110d1f4C4266e5E48E94FbD85285'
 snw_abi_address = '0x98d9798511d60103834a8b117dd7f51b8f8cd0d6'
 
 line = '------------------------------------------------------------'
+
+one_per_wallet = True # Because of High Demand there is no reason to trying Buy more then 1 Worker!
 # GLOBAL
 
 
@@ -301,6 +303,9 @@ def workers_queue(wallet_address, contract_address, abi_data, private_key, date_
     wallet_address = web3.toChecksumAddress(wallet_address)
     nonce = web3.eth.get_transaction_count(wallet_address)
 
+    if one_per_wallet: # Because of High Demand we can't Buy more than 1 Player!
+        workers = 1
+
     for i in range(workers):
         new_hire_threads = threading.Thread(target=tx_new_worker, daemon=True, args=(wallet_address, contract_address, abi_data, private_key, date_time, nonce,))
         new_hire_threads.start()
@@ -408,6 +413,18 @@ def get_wallets():
     return wallets
 
 
+def one_worker_per_wallet():
+    global one_per_wallet
+    one_worker = input('Do you want to Buy only 1 Worker per 1 Wallet? (y/n): ')
+    if one_worker == 'y':
+        one_per_wallet = True
+        clear_history()
+        print('Accept only one Worker per one Wallet!')
+    else:
+        one_per_wallet = False
+        print('Decline one Worker per one Wallet!')
+
+
 def user_option_check(abi_data, wallets):
     print('Please, Choose statistic Option (1-3): ')
     print('1. Statistic with Details!')
@@ -447,7 +464,11 @@ def main_menu(abi_data, wallets):
     print('2. Claiming Available Workers!')
     print('3. Hiring New Players!')
     print('4. Use Another Mnemonic!')
-    print('5. Exit from Application!')
+    if one_per_wallet:
+        print('5. One Worker per one Wallet! (Yes)')
+    else:
+        print('5. One Worker per one Wallet! (No)')
+    print('6. Exit from Application!')
     user_option = input()
     clear_history()
 
@@ -468,6 +489,11 @@ def main_menu(abi_data, wallets):
         return
 
     if user_option == '5':
+        one_worker_per_wallet()
+        main_menu(abi_data, wallets)
+        return
+
+    if user_option == '6':
         exit()
 
     main_menu(abi_data, wallets)
