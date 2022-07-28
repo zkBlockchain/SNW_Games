@@ -397,7 +397,10 @@ def run_workers_queue(wallet_address, contract_address, abi_data, private_key, d
         else:  
             print(wallet_address + ' - 0 Players! Buy 2 Players!')
             workers += 2
-            summary_info += 2
+            if one_per_wallet:
+                summary_info += 1
+            else:
+                summary_info += 2
 
             new_worker_threads(wallet_address, contract_address, abi_data, private_key, date_time, workers)
     else:
