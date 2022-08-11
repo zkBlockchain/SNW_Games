@@ -29,6 +29,7 @@ snw_abi_address = '0x98d9798511d60103834a8b117dd7f51b8f8cd0d6'
 line = '------------------------------------------------------------'
 
 one_per_wallet = True # Because of High Demand there is no reason to trying Buy more then 1 Worker!
+priority_fees = True # Because of High Demand!
 # GLOBAL
 
 
@@ -317,15 +318,18 @@ def tx_new_worker(wallet_address, contract_address, abi_data, private_key, date_
     contract_address = web3.toChecksumAddress(contract_address)
     wallet_address = web3.toChecksumAddress(wallet_address)
     contract = web3.eth.contract(address=contract_address, abi=abi_data)
-
     value = web3.toWei(0, 'ether')
+    gas_price = web3.toWei('5','gwei');
+
+    if priority_fees:
+        gas_price = web3.toWei('10','gwei');
 
     contracts_response = contract.functions.hireWorker().buildTransaction({
         'chainId': 56,
         'from': wallet_address,
         'value': value,
         'gas': 1000000,
-        'gasPrice': web3.toWei('5','gwei'), 
+        'gasPrice': gas_price, 
         'nonce': nonce
     })
 
@@ -418,14 +422,26 @@ def get_wallets():
 
 def one_worker_per_wallet():
     global one_per_wallet
-    one_worker = input('Do you want to Buy only 1 Worker per 1 Wallet? (y/n): ')
-    if one_worker == 'y':
+    user_option = input('Do you want to Buy only 1 Worker per 1 Wallet? (y/n): ')
+    if user_option == 'y':
         one_per_wallet = True
         clear_history()
         print('Accept only one Worker per one Wallet!')
     else:
         one_per_wallet = False
         print('Decline one Worker per one Wallet!')
+
+
+def use_priority_fees():
+    global priority_fees
+    user_option = input('Do you want to use only Priority Fees? (y/n): ')
+    if user_option == 'y':
+        priority_fees = True
+        clear_history()
+        print('Using Priority Fees!')
+    else:
+        priority_fees = False
+        print('Decline Priority Fees!')
 
 
 def user_option_check(abi_data, wallets):
@@ -471,7 +487,11 @@ def main_menu(abi_data, wallets):
         print('5. One Worker per one Wallet! (Yes)')
     else:
         print('5. One Worker per one Wallet! (No)')
-    print('6. Exit from Application!')
+    if priority_fees:
+        print('6. Using Priority Fees! (Yes)')
+    else:
+        print('6. Using Priority Fees! (No)')
+    print('7. Exit from Application!')
     user_option = input()
     clear_history()
 
@@ -497,6 +517,11 @@ def main_menu(abi_data, wallets):
         return
 
     if user_option == '6':
+        use_priority_fees()
+        main_menu(abi_data, wallets)
+        return
+
+    if user_option == '7':
         exit()
 
     main_menu(abi_data, wallets)
