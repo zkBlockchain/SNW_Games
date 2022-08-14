@@ -172,7 +172,7 @@ def deposit_to_HP_option(wallets_array):
 
 
 def withdraw_from_HP_option(wallets_array):
-    print('Withdraw from HP!')
+    print('Withdraw from HP!') # To Do!
     print('Everything is Done!\n')
 
 
@@ -187,7 +187,7 @@ def show_balances_option(wallets_array):
 
 
 def collecting_tokens_option(wallets_array):
-    print('Collecting BSW to 1 Wallet!')
+    print('Collecting BSW to 1 Wallet!') # To Do!
     print('Everything is Done!\n')
 
 
