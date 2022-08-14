@@ -1,7 +1,7 @@
 # SNW Games Automations
 <div><b>SQUID.py</b> - SNW Main (SQUID) Game Tools (Play Cycle, Buy Contracts).</div>
 <div><b>Workers.py</b> - SNW Workers (STAFF) Game Tools (Check, Claim, Buy and others).</div>
-<div><b>Tools.py</b> - Approves for SNW & Biswap HP Contracts, Deposits to Biswap HP and others.</div>
+<div><b>Tools.py</b> - Approves for SNW & Biswap HP Contracts, Deposits to Biswap HP and others.</div><br/>
 <div><b>The interactions takes places directly with the contracts of the games.</b></div>
 <h2>Description</h2>
 <h3>SQUID.py</h3>
