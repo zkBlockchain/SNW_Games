@@ -2,10 +2,8 @@ from web3 import Web3
 from datetime import datetime
 from crypto import HDPrivateKey, HDKey
 
-import json, requests
-import os, threading
-import time, pause
-import getpass
+import requests, json, getpass, time
+import os, subprocess, threading, pause
 
 
 # WALLET DATA OBJECT
@@ -47,6 +45,14 @@ def get_abi(abi_address):
     return abi_data
 
 
+def get_wallets():
+    mnemonic = getpass.getpass('Please, Enter your Mnemonic: ')
+    wallet_amounts = int(input('Please, Enter count of Wallets: '))
+    wallets_array = generate_wallets(wallet_amounts, mnemonic)
+
+    return wallets_array
+
+
 def get_time():
     now = datetime.now()
     current_time = now.strftime('%H:%M:%S')
@@ -69,6 +75,17 @@ def generate_wallets(amount, mnemonic):
         wallet_object = wallet_data(address, address_pk)
         wallets.append(wallet_object)
     return wallets
+
+
+def get_balance(contract_address, wallet_address, private_key, abi_data):
+    web3 = Web3(Web3.HTTPProvider(bsc_network))
+
+    contract_address = web3.toChecksumAddress(contract_address)
+    wallet_address = web3.toChecksumAddress(wallet_address)
+    contract = web3.eth.contract(address=contract_address, abi=abi_data)
+    contracts_response = contract.functions.balanceOf(wallet_address).call()
+
+    return contracts_response
 
 
 def approve(token, contract_address, wallet_address, private_key, abi_data):
@@ -132,13 +149,46 @@ def deposit_hp(contract_address, deposit_size, wallet_address, private_key, abi_
 # MAIN FUNCTIONS
 
 
-# MAIN MENU FUNCTIONS
-def get_wallets():
-    mnemonic = getpass.getpass('Please, Enter your Mnemonic: ')
-    wallet_amounts = int(input('Please, Enter count of Wallets: '))
-    wallets_array = generate_wallets(wallet_amounts, mnemonic)
+# MAIN MENU
+def approve_HP_option(wallets_array):
+    abi_data_bsw = get_abi(biswap_token_address)
+    for wallet_string in wallets_array:
+        approve(biswap_token_address, biswap_hp_contract_address, wallet_string.address, wallet_string.address_pk, abi_data_bsw)
 
-    return wallets_array
+
+def approve_SNW_option(wallets_array):
+    abi_data_bsw = get_abi(biswap_token_address)
+    for wallet_string in wallets_array:
+        approve(biswap_token_address, snw_contract_address, wallet_string.address, wallet_string.address_pk, abi_data_bsw)
+
+
+def deposit_to_HP_option(wallets_array):
+    abi_data_hp = get_abi(biswap_hp_abi_address)
+    deposit_size = input('Please, Enter Deposit Size (10): ')
+    if deposit_size == '':
+        deposit_size = '10'
+    for wallet_string in wallets_array:
+        deposit_hp(biswap_hp_contract_address, deposit_size, wallet_string.address, wallet_string.address_pk, abi_data_hp)
+
+
+def withdraw_from_HP_option(wallets_array):
+    print('Withdraw from HP!')
+    print('Everything is Done!\n')
+
+
+def show_balances_option(wallets_array):
+    abi_data_bsw = get_abi(biswap_token_address)
+    wallet_count = 0
+    for wallet_string in wallets_array:
+        wallet_count += 1
+        response = get_balance(biswap_token_address, wallet_string.address, wallet_string.address_pk, abi_data_bsw)
+        print(str(wallet_count) + '. ' + wallet_string.address + ' - ' + str(response))
+    print('Everything is Done!\n')
+
+
+def collecting_tokens_option(wallets_array):
+    print('Collecting BSW to 1 Wallet!')
+    print('Everything is Done!\n')
 
 
 def main_menu(wallets_array):
@@ -149,33 +199,41 @@ def main_menu(wallets_array):
     print('1. Approve HP!')
     print('2. Approve SNW!')
     print('3. Deposit to HP!')
-    print('4. Use Another Mnemonic!!')
-    print('5. Exit from Application!')
-    option = int(input())
+    print('4. Withdraw from HP!')
+    print('5. Show wallets Balances!')
+    print('6. Collecting BSW Tokens!')
+    print('7. Use Another Mnemonic!')
+    print('8. Exit from Application!')
+    user_option = input()
     clear_history()
 
-    if option == 1:
-        abi_data_bsw = get_abi(biswap_token_address)
-        for wallet_string in wallets_array:
-            approve(biswap_token_address, biswap_hp_contract_address, wallet_string.address, wallet_string.address_pk, abi_data_bsw)
-    elif option == 2:
-        abi_data_bsw = get_abi(biswap_token_address)
-        for wallet_string in wallets_array:
-            approve(biswap_token_address, snw_contract_address, wallet_string.address, wallet_string.address_pk, abi_data_bsw)
-    elif option == 3:
-        abi_data_hp = get_abi(biswap_hp_abi_address)
-        deposit_size = input('Please, Enter Deposit Size (10): ')
-        if deposit_size == '':
-            deposit_size = '10'
-        for wallet_string in wallets_array:
-            deposit_hp(biswap_hp_contract_address, deposit_size, wallet_string.address, wallet_string.address_pk, abi_data_hp)
-    elif option == 4:
+    if user_option == '1':
+        approve_HP_option(wallets_array)
+
+    if user_option == '2':
+        approve_SNW_option(wallets_array)
+
+    if user_option == '3':
+        deposit_to_HP_option(wallets_array)
+
+    if user_option == '4':
+        withdraw_from_HP_option(wallets_array)
+    
+    if user_option == '5':
+        show_balances_option(wallets_array)
+
+    if user_option == '6':
+        collecting_tokens_option(wallets_array)
+
+    if user_option == '7':
         wallets_array = get_wallets()
-    elif option == 5:
+
+    if user_option == '8':
         exit()
 
     main_menu(wallets_array)
-# MAIN MENU FUNCTIONS
+    return
+# MAIN MENU
 
 
 def main():

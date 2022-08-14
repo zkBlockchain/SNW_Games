@@ -16,7 +16,7 @@ class wallet_data:
 # WALLET DATA OBJECT
 
 
-# GLOBAL
+# GLOBAL VARIABLES
 bsc_network = 'https://bsc-dataseed1.binance.org'
 biswap_token_address = '0x965F527D9159dCe6288a2219DB51fc6Eef120dD1'
 
@@ -28,9 +28,9 @@ snw_abi_address = '0x98d9798511d60103834a8b117dd7f51b8f8cd0d6'
 
 line = '------------------------------------------------------------'
 
-one_per_wallet = True # Because of High Demand there is no reason to trying Buy more then 1 Worker!
-priority_fees = True # Because of High Demand!
-# GLOBAL
+one_per_wallet = True # Due to limitations of contract
+priority_fees = True # Due to high demand of game
+# GLOBAL VARIABLES
 
 
 # COMMON FUNCTIONS
