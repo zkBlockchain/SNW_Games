@@ -116,7 +116,7 @@ def approve(token, contract_address, wallet_address, private_key, abi_data):
     print(wallet_address + ' - Approve tx Done!')
 
 
-def deposit_hp(contract_address, deposit_size, wallet_address, private_key, abi_data):
+def deposit_HP(contract_address, deposit_size, wallet_address, private_key, abi_data):
     web3 = Web3(Web3.HTTPProvider(bsc_network))
     print(wallet_address + ' - Connection: ' + str(web3.isConnected()))
 
@@ -146,6 +146,57 @@ def deposit_hp(contract_address, deposit_size, wallet_address, private_key, abi_
 
     web3.eth.wait_for_transaction_receipt(tx_hash)
     print(wallet_address + ' - Deposit tx Done! - ' + get_time())
+
+
+def withdraw_from_HP(contract_address, wallet_address, private_key, abi_data):
+    web3 = Web3(Web3.HTTPProvider(bsc_network))
+
+    contract_address = web3.toChecksumAddress(contract_address)
+    wallet_address = web3.toChecksumAddress(wallet_address)
+    nonce = web3.eth.getTransactionCount(wallet_address)
+    contract = web3.eth.contract(address=contract_address, abi=abi_data)
+    
+    approve_tx = contract.functions.withdrawAll().buildTransaction({
+        'chainId': 56,
+        'from': wallet_address, 
+        'gas': 1000000,
+        'gasPrice': web3.toWei('5','gwei'), 
+        'nonce': nonce
+    })
+
+    sign_tx = web3.eth.account.signTransaction(approve_tx, private_key)
+    tx_hash = web3.eth.sendRawTransaction(sign_tx.rawTransaction)
+    print(wallet_address + ' - Withdraw tx is sent! Awaiting!')
+
+    web3.eth.wait_for_transaction_receipt(tx_hash)
+    print(wallet_address + ' - Withdraw tx is Done!')
+
+
+def collect_tokens(contract_address, wallet_address, private_key, recipient_wallet, abi_data):
+    web3 = Web3(Web3.HTTPProvider(bsc_network))
+
+    contract_address = web3.toChecksumAddress(contract_address)
+    wallet_address = web3.toChecksumAddress(wallet_address)
+    recipient_wallet = web3.toChecksumAddress(recipient_wallet)
+    nonce = web3.eth.getTransactionCount(wallet_address)
+
+    contract = web3.eth.contract(address=contract_address, abi=abi_data)
+    available_tokens = contract.functions.balanceOf(wallet_address).call()
+    
+    approve_tx = contract.functions.transfer(recipient_wallet, available_tokens).buildTransaction({
+        'chainId': 56,
+        'from': wallet_address, 
+        'gas': 1000000,
+        'gasPrice': web3.toWei('5','gwei'), 
+        'nonce': nonce
+    })
+
+    sign_tx = web3.eth.account.signTransaction(approve_tx, private_key)
+    tx_hash = web3.eth.sendRawTransaction(sign_tx.rawTransaction)
+    print(wallet_address + ' - Token tx is sent! Awaiting!')
+
+    web3.eth.wait_for_transaction_receipt(tx_hash)
+    print(wallet_address + ' - Token tx is Done!')
 # MAIN FUNCTIONS
 
 
@@ -154,12 +205,14 @@ def approve_HP_option(wallets_array):
     abi_data_bsw = get_abi(biswap_token_address)
     for wallet_string in wallets_array:
         approve(biswap_token_address, biswap_hp_contract_address, wallet_string.address, wallet_string.address_pk, abi_data_bsw)
+    print('Everything is Done!\n')
 
 
 def approve_SNW_option(wallets_array):
     abi_data_bsw = get_abi(biswap_token_address)
     for wallet_string in wallets_array:
         approve(biswap_token_address, snw_contract_address, wallet_string.address, wallet_string.address_pk, abi_data_bsw)
+    print('Everything is Done!\n')
 
 
 def deposit_to_HP_option(wallets_array):
@@ -168,11 +221,14 @@ def deposit_to_HP_option(wallets_array):
     if deposit_size == '':
         deposit_size = '10'
     for wallet_string in wallets_array:
-        deposit_hp(biswap_hp_contract_address, deposit_size, wallet_string.address, wallet_string.address_pk, abi_data_hp)
+        deposit_HP(biswap_hp_contract_address, deposit_size, wallet_string.address, wallet_string.address_pk, abi_data_hp)
+    print('Everything is Done!\n')
 
 
 def withdraw_from_HP_option(wallets_array):
-    print('Withdraw from HP!') # To Do!
+    abi_data_hp = get_abi(biswap_hp_abi_address)
+    for wallet_string in wallets_array:
+        withdraw_from_HP(biswap_hp_contract_address, wallet_string.address, wallet_string.address_pk, abi_data_hp)
     print('Everything is Done!\n')
 
 
@@ -187,7 +243,15 @@ def show_balances_option(wallets_array):
 
 
 def collecting_tokens_option(wallets_array):
-    print('Collecting BSW to 1 Wallet!') # To Do!
+    recipient_wallet = input('Please, Enter your Main Wallet to Receive tokens: \n')
+    print('This is your Main Wallet: ' + recipient_wallet)
+    user_option = input('Do you want to Continue with this wallet? (y/n): ')
+    if user_option != 'y':
+        return
+
+    abi_data_bsw = get_abi(biswap_token_address)
+    for wallet_string in wallets_array:
+        collect_tokens(biswap_token_address, wallet_string.address, wallet_string.address_pk, recipient_wallet, abi_data_bsw)
     print('Everything is Done!\n')
 
 
