@@ -25,6 +25,8 @@ biswap_hp_abi_address = '0xa4b20183039b2F9881621C3A03732fBF0bfdff10'
 
 snw_contract_address = '0xF28743d962AD110d1f4C4266e5E48E94FbD85285'
 snw_abi_address = '0x98d9798511d60103834a8b117dd7f51b8f8cd0d6'
+
+withdraw_fee_time = 7776000
 # GLOBAL VARIABLES
 
 
@@ -155,21 +157,29 @@ def withdraw_from_HP(contract_address, wallet_address, private_key, abi_data):
     wallet_address = web3.toChecksumAddress(wallet_address)
     nonce = web3.eth.getTransactionCount(wallet_address)
     contract = web3.eth.contract(address=contract_address, abi=abi_data)
-    
-    approve_tx = contract.functions.withdrawAll().buildTransaction({
-        'chainId': 56,
-        'from': wallet_address, 
-        'gas': 1000000,
-        'gasPrice': web3.toWei('5','gwei'), 
-        'nonce': nonce
-    })
+    contracts_response = contract.functions.userInfo(wallet_address).call()
 
-    sign_tx = web3.eth.account.signTransaction(approve_tx, private_key)
-    tx_hash = web3.eth.sendRawTransaction(sign_tx.rawTransaction)
-    print(wallet_address + ' - Withdraw tx is sent! Awaiting!')
+    ts = round(time.time())
+    check_withdraw = (contracts_response[3] + withdraw_fee_time) - ts
 
-    web3.eth.wait_for_transaction_receipt(tx_hash)
-    print(wallet_address + ' - Withdraw tx is Done!')
+    if check_withdraw < 0:
+        approve_tx = contract.functions.withdrawAll().buildTransaction({
+            'chainId': 56,
+            'from': wallet_address, 
+            'gas': 1000000,
+            'gasPrice': web3.toWei('5','gwei'), 
+            'nonce': nonce
+        })
+
+        sign_tx = web3.eth.account.signTransaction(approve_tx, private_key)
+        tx_hash = web3.eth.sendRawTransaction(sign_tx.rawTransaction)
+        print(wallet_address + ' - Withdraw tx is sent! Awaiting!')
+
+        web3.eth.wait_for_transaction_receipt(tx_hash)
+        print(wallet_address + ' - Withdraw tx is Done!')
+    else:
+        remain_days = str(round(check_withdraw / 60 / 60 / 24))
+        print(wallet_address + ' - Withdraw Fee is Active! (' + remain_days + 'D)')
 
 
 def collect_tokens(contract_address, wallet_address, private_key, recipient_wallet, abi_data):
