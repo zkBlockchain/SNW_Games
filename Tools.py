@@ -150,7 +150,7 @@ def deposit_HP(contract_address, deposit_size, wallet_address, private_key, abi_
     print(wallet_address + ' - Deposit tx Done! - ' + get_time())
 
 
-def withdraw_from_HP(contract_address, wallet_address, private_key, abi_data):
+def withdraw_from_HP(contract_address, wallet_address, private_key, abi_data, create_tx):
     web3 = Web3(Web3.HTTPProvider(bsc_network))
 
     contract_address = web3.toChecksumAddress(contract_address)
@@ -162,7 +162,7 @@ def withdraw_from_HP(contract_address, wallet_address, private_key, abi_data):
     ts = round(time.time())
     check_withdraw = (contracts_response[3] + withdraw_fee_time) - ts
 
-    if check_withdraw < 0:
+    if check_withdraw < 0 and create_tx:
         approve_tx = contract.functions.withdrawAll().buildTransaction({
             'chainId': 56,
             'from': wallet_address, 
@@ -179,7 +179,10 @@ def withdraw_from_HP(contract_address, wallet_address, private_key, abi_data):
         print(wallet_address + ' - Withdraw tx is Done!')
     else:
         remain_days = str(round(check_withdraw / 60 / 60 / 24))
-        print(wallet_address + ' - Withdraw Fee is Active! (' + remain_days + 'D)')
+        if check_withdraw >= 0:
+            print(wallet_address + ' - Withdraw Fee is Active! (' + remain_days + 'D)')
+        else:
+            print(wallet_address + ' - No Withdraw Fee!')
 
 
 def collect_tokens(contract_address, wallet_address, private_key, recipient_wallet, abi_data):
@@ -236,9 +239,14 @@ def deposit_to_HP_option(wallets_array):
 
 
 def withdraw_from_HP_option(wallets_array):
+    create_tx = False
+    create_tx_option = input('Do you want to Create transactions? (y/n): ')
+    if create_tx_option == 'y':
+        create_tx = True
+
     abi_data_hp = get_abi(biswap_hp_abi_address)
     for wallet_string in wallets_array:
-        withdraw_from_HP(biswap_hp_contract_address, wallet_string.address, wallet_string.address_pk, abi_data_hp)
+        withdraw_from_HP(biswap_hp_contract_address, wallet_string.address, wallet_string.address_pk, abi_data_hp, create_tx)
     print('Everything is Done!\n')
 
 
