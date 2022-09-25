@@ -210,6 +210,33 @@ def collect_tokens(contract_address, wallet_address, private_key, recipient_wall
 
     web3.eth.wait_for_transaction_receipt(tx_hash)
     print(wallet_address + ' - Token tx is Done!')
+
+
+def collect_bnb_tokens(wallet_address, private_key, recipient_wallet):
+    web3 = Web3(Web3.HTTPProvider(bsc_network))
+
+    wallet_address = web3.toChecksumAddress(wallet_address)
+    recipient_wallet = web3.toChecksumAddress(recipient_wallet)
+    nonce = web3.eth.getTransactionCount(wallet_address)
+
+    available_balance = web3.eth.getBalance(wallet_address)
+    gas_calc = web3.toWei("5", "gwei") * 21000
+    
+    approve_tx = {
+        'chainId': 56,
+        'nonce': nonce,
+        'to': recipient_wallet, 
+        'gas': 21000,
+        'gasPrice': web3.toWei('5','gwei'), 
+        'value': available_balance - gas_calc
+    }
+
+    sign_tx = web3.eth.account.signTransaction(approve_tx, private_key)
+    tx_hash = web3.eth.sendRawTransaction(sign_tx.rawTransaction)
+    print(wallet_address + ' - BNB tx is sent! Awaiting!')
+
+    web3.eth.wait_for_transaction_receipt(tx_hash)
+    print(wallet_address + ' - BNB tx is Done!')
 # MAIN FUNCTIONS
 
 
@@ -273,6 +300,18 @@ def collecting_tokens_option(wallets_array):
     print('Everything is Done!\n')
 
 
+def collecting_BNB_option(wallets_array):
+    recipient_wallet = input('Please, Enter your Main Wallet to Receive tokens: \n')
+    print('This is your Main Wallet: ' + recipient_wallet)
+    user_option = input('Do you want to Continue with this wallet? (y/n): ')
+    if user_option != 'y':
+        return
+
+    for wallet_string in wallets_array:
+        collect_bnb_tokens(wallet_string.address, wallet_string.address_pk, recipient_wallet)
+    print('Everything is Done!\n')
+
+
 def main_menu(wallets_array):
     if wallets_array == []:
         wallets_array = get_wallets()
@@ -284,8 +323,9 @@ def main_menu(wallets_array):
     print('4. Withdraw from HP!')
     print('5. Show wallets Balances!')
     print('6. Collecting BSW Tokens!')
-    print('7. Use Another Mnemonic!')
-    print('8. Exit from Application!')
+    print('7. Collecting BNB Tokens!')
+    print('8. Use Another Mnemonic!')
+    print('9. Exit from Application!')
     user_option = input()
     clear_history()
 
@@ -308,9 +348,12 @@ def main_menu(wallets_array):
         collecting_tokens_option(wallets_array)
 
     if user_option == '7':
-        wallets_array = get_wallets()
+        collecting_BNB_option(wallets_array)
 
     if user_option == '8':
+        wallets_array = get_wallets()
+
+    if user_option == '9':
         exit()
 
     main_menu(wallets_array)
