@@ -1,6 +1,5 @@
 from web3 import Web3
 from datetime import datetime
-from crypto import HDPrivateKey, HDKey
 
 import requests, json, getpass
 import os, subprocess, threading, pause
@@ -57,17 +56,14 @@ def clear_history():
 
 
 def generate_wallets(amount, mnemonic):
-    master_key = HDPrivateKey.master_key_from_mnemonic(mnemonic)
-    root_keys = HDKey.from_path(master_key,"m/44'/60'/0'")
-    acct_priv_key = root_keys[-1]
+    web3 = Web3()
+    web3.eth.account.enable_unaudited_hdwallet_features()
     wallets = []
-
+    
     for i in range(amount):
-        keys = HDKey.from_path(acct_priv_key,'{change}/{index}'.format(change=0, index=i))
-        private_key = keys[-1]
-
-        address = private_key.public_key.address()
-        address_pk = '0x' + private_key._key.to_hex()
+        account = web3.eth.account.from_mnemonic(mnemonic, account_path=f"m/44'/60'/0'/0/{i}")
+        address = account.address
+        address_pk = Web3.toHex(account.key)
 
         wallet_object = wallet_data(address, address_pk)
         wallets.append(wallet_object)
