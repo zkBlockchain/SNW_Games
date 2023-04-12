@@ -68,7 +68,7 @@ def generate_wallets(amount, mnemonic):
     for i in range(amount):
         account = web3.eth.account.from_mnemonic(mnemonic, account_path=f"m/44'/60'/0'/0/{i}")
         address = account.address
-        address_pk = Web3.toHex(account.key)
+        address_pk = web3.to_hex(account.key)
 
         wallet_object = wallet_data(address, address_pk)
         wallets.append(wallet_object)
@@ -78,8 +78,8 @@ def generate_wallets(amount, mnemonic):
 def get_balance(contract_address, wallet_address, private_key, abi_data):
     web3 = Web3(Web3.HTTPProvider(bsc_network))
 
-    contract_address = web3.toChecksumAddress(contract_address)
-    wallet_address = web3.toChecksumAddress(wallet_address)
+    contract_address = web3.to_checksum_address(contract_address)
+    wallet_address = web3.to_checksum_address(wallet_address)
     contract = web3.eth.contract(address=contract_address, abi=abi_data)
     contracts_response = contract.functions.balanceOf(wallet_address).call()
 
@@ -88,26 +88,25 @@ def get_balance(contract_address, wallet_address, private_key, abi_data):
 
 def approve(token, contract_address, wallet_address, private_key, abi_data):
     web3 = Web3(Web3.HTTPProvider(bsc_network))
-    print(wallet_address + ' - Connection: ' + str(web3.isConnected()))
 
-    token = web3.toChecksumAddress(token)
-    contract_address = web3.toChecksumAddress(contract_address)
-    wallet_address = web3.toChecksumAddress(wallet_address)
+    token = web3.to_checksum_address(token)
+    contract_address = web3.to_checksum_address(contract_address)
+    wallet_address = web3.to_checksum_address(wallet_address)
     contract = web3.eth.contract(address=token, abi=abi_data)
 
-    max_amount = web3.toWei(2**64-1, 'ether')
-    nonce = web3.eth.getTransactionCount(wallet_address)
+    max_amount = web3.to_wei(2**64-1, 'ether')
+    nonce = web3.eth.get_transaction_count(wallet_address)
 
-    approve_tx = contract.functions.approve(contract_address, max_amount).buildTransaction({
+    approve_tx = contract.functions.approve(contract_address, max_amount).build_transaction({
         'chainId': 56,
         'from': wallet_address, 
         'gas': 1000000,
-        'gasPrice': web3.toWei('5','gwei'), 
+        'gasPrice': web3.to_wei('5','gwei'), 
         'nonce': nonce
     })
     
-    sign_tx = web3.eth.account.signTransaction(approve_tx, private_key)
-    tx_hash = web3.eth.sendRawTransaction(sign_tx.rawTransaction)
+    sign_tx = web3.eth.account.sign_transaction(approve_tx, private_key)
+    tx_hash = web3.eth.send_raw_transaction(sign_tx.rawTransaction)
     print(wallet_address + ' - Approve tx is sent! Awaiting Response!')
 
     web3.eth.wait_for_transaction_receipt(tx_hash)
@@ -116,22 +115,21 @@ def approve(token, contract_address, wallet_address, private_key, abi_data):
 
 def deposit_HP(contract_address, deposit_size, wallet_address, private_key, abi_data):
     web3 = Web3(Web3.HTTPProvider(bsc_network))
-    print(wallet_address + ' - Connection: ' + str(web3.isConnected()))
 
-    contract_address = web3.toChecksumAddress(contract_address)
-    wallet_address = web3.toChecksumAddress(wallet_address)
+    contract_address = web3.to_checksum_address(contract_address)
+    wallet_address = web3.to_checksum_address(wallet_address)
     contract = web3.eth.contract(address=contract_address, abi=abi_data)
 
-    value = web3.toWei(0, 'ether')
+    value = web3.to_wei(0, 'ether')
     nonce = web3.eth.get_transaction_count(wallet_address)
-    deposit_uint256 = web3.toWei(str(deposit_size),'ether')
+    deposit_uint256 = web3.to_wei(str(deposit_size),'ether')
     
-    contracts_tx = contract.functions.deposit(deposit_uint256).buildTransaction({
+    contracts_tx = contract.functions.deposit(deposit_uint256).build_transaction({
         'chainId': 56,
         'from': wallet_address,
         'value': value,
         'gas': 1000000,
-        'gasPrice': web3.toWei('5','gwei'), 
+        'gasPrice': web3.to_wei('5','gwei'), 
         'nonce': nonce
     })
 
@@ -149,9 +147,9 @@ def deposit_HP(contract_address, deposit_size, wallet_address, private_key, abi_
 def withdraw_from_HP(contract_address, wallet_address, private_key, abi_data, create_tx):
     web3 = Web3(Web3.HTTPProvider(bsc_network))
 
-    contract_address = web3.toChecksumAddress(contract_address)
-    wallet_address = web3.toChecksumAddress(wallet_address)
-    nonce = web3.eth.getTransactionCount(wallet_address)
+    contract_address = web3.to_checksum_address(contract_address)
+    wallet_address = web3.to_checksum_address(wallet_address)
+    nonce = web3.eth.get_transaction_count(wallet_address)
     contract = web3.eth.contract(address=contract_address, abi=abi_data)
     contracts_response = contract.functions.userInfo(wallet_address).call()
 
@@ -159,16 +157,16 @@ def withdraw_from_HP(contract_address, wallet_address, private_key, abi_data, cr
     check_withdraw = (contracts_response[3] + withdraw_fee_time) - ts
 
     if check_withdraw < 0 and create_tx:
-        approve_tx = contract.functions.withdrawAll().buildTransaction({
+        approve_tx = contract.functions.withdrawAll().build_transaction({
             'chainId': 56,
             'from': wallet_address, 
             'gas': 1000000,
-            'gasPrice': web3.toWei('5','gwei'), 
+            'gasPrice': web3.to_wei('5','gwei'), 
             'nonce': nonce
         })
 
-        sign_tx = web3.eth.account.signTransaction(approve_tx, private_key)
-        tx_hash = web3.eth.sendRawTransaction(sign_tx.rawTransaction)
+        sign_tx = web3.eth.account.sign_transaction(approve_tx, private_key)
+        tx_hash = web3.eth.send_raw_transaction(sign_tx.rawTransaction)
         print(wallet_address + ' - Withdraw tx is sent! Awaiting!')
 
         web3.eth.wait_for_transaction_receipt(tx_hash)
@@ -184,24 +182,24 @@ def withdraw_from_HP(contract_address, wallet_address, private_key, abi_data, cr
 def collect_tokens(contract_address, wallet_address, private_key, recipient_wallet, abi_data):
     web3 = Web3(Web3.HTTPProvider(bsc_network))
 
-    contract_address = web3.toChecksumAddress(contract_address)
-    wallet_address = web3.toChecksumAddress(wallet_address)
-    recipient_wallet = web3.toChecksumAddress(recipient_wallet)
-    nonce = web3.eth.getTransactionCount(wallet_address)
+    contract_address = web3.to_checksum_address(contract_address)
+    wallet_address = web3.to_checksum_address(wallet_address)
+    recipient_wallet = web3.to_checksum_address(recipient_wallet)
+    nonce = web3.eth.get_transaction_count(wallet_address)
 
     contract = web3.eth.contract(address=contract_address, abi=abi_data)
     available_tokens = contract.functions.balanceOf(wallet_address).call()
     
-    approve_tx = contract.functions.transfer(recipient_wallet, available_tokens).buildTransaction({
+    approve_tx = contract.functions.transfer(recipient_wallet, available_tokens).build_transaction({
         'chainId': 56,
         'from': wallet_address, 
         'gas': 1000000,
-        'gasPrice': web3.toWei('5','gwei'), 
+        'gasPrice': web3.to_wei('5','gwei'), 
         'nonce': nonce
     })
 
-    sign_tx = web3.eth.account.signTransaction(approve_tx, private_key)
-    tx_hash = web3.eth.sendRawTransaction(sign_tx.rawTransaction)
+    sign_tx = web3.eth.account.sign_transaction(approve_tx, private_key)
+    tx_hash = web3.eth.send_raw_transaction(sign_tx.rawTransaction)
     print(wallet_address + ' - Token tx is sent! Awaiting!')
 
     web3.eth.wait_for_transaction_receipt(tx_hash)
@@ -211,24 +209,24 @@ def collect_tokens(contract_address, wallet_address, private_key, recipient_wall
 def collect_bnb_tokens(wallet_address, private_key, recipient_wallet):
     web3 = Web3(Web3.HTTPProvider(bsc_network))
 
-    wallet_address = web3.toChecksumAddress(wallet_address)
-    recipient_wallet = web3.toChecksumAddress(recipient_wallet)
-    nonce = web3.eth.getTransactionCount(wallet_address)
+    wallet_address = web3.to_checksum_address(wallet_address)
+    recipient_wallet = web3.to_checksum_address(recipient_wallet)
+    nonce = web3.eth.get_transaction_count(wallet_address)
 
-    available_balance = web3.eth.getBalance(wallet_address)
-    gas_calc = web3.toWei("5", "gwei") * 21000
+    available_balance = web3.eth.get_balance(wallet_address)
+    gas_calc = web3.to_wei("5", "gwei") * 21000
     
     approve_tx = {
         'chainId': 56,
         'nonce': nonce,
         'to': recipient_wallet, 
         'gas': 21000,
-        'gasPrice': web3.toWei('5','gwei'), 
+        'gasPrice': web3.to_wei('5','gwei'), 
         'value': available_balance - gas_calc
     }
 
-    sign_tx = web3.eth.account.signTransaction(approve_tx, private_key)
-    tx_hash = web3.eth.sendRawTransaction(sign_tx.rawTransaction)
+    sign_tx = web3.eth.account.sign_transaction(approve_tx, private_key)
+    tx_hash = web3.eth.send_raw_transaction(sign_tx.rawTransaction)
     print(wallet_address + ' - BNB tx is sent! Awaiting!')
 
     web3.eth.wait_for_transaction_receipt(tx_hash)

@@ -93,7 +93,7 @@ def generate_wallets(amount, mnemonic):
     for i in range(amount):
         account = web3.eth.account.from_mnemonic(mnemonic, account_path=f"m/44'/60'/0'/0/{i}")
         address = account.address
-        address_pk = Web3.toHex(account.key)
+        address_pk = web3.to_hex(account.key)
 
         wallet_object = wallet_data(address, address_pk)
         wallets.append(wallet_object)
@@ -111,8 +111,8 @@ def get_game_id(se):
 
 def get_user_se(wallet_address, abi_data):
 	web3 = Web3(Web3.HTTPProvider(bsc_network))
-	contract_address = web3.toChecksumAddress(players_contract_address)
-	wallet_address = web3.toChecksumAddress(wallet_address)
+	contract_address = web3.to_checksum_address(players_contract_address)
+	wallet_address = web3.to_checksum_address(wallet_address)
 	contract = web3.eth.contract(address=contract_address, abi=abi_data)
 
 	user_se = contract.functions.availableSEAmountV2(wallet_address).call()
@@ -125,8 +125,8 @@ def get_user_players(wallet_address, abi_data):
 	user_players = []
 
 	web3 = Web3(Web3.HTTPProvider(bsc_network))
-	contract_address = web3.toChecksumAddress(players_contract_address)
-	wallet_address = web3.toChecksumAddress(wallet_address)
+	contract_address = web3.to_checksum_address(players_contract_address)
+	wallet_address = web3.to_checksum_address(wallet_address)
 	contract = web3.eth.contract(address=contract_address, abi=abi_data)
 
 	contract_response = contract.functions.arrayUserPlayers(wallet_address).call()
@@ -140,20 +140,20 @@ def get_user_players(wallet_address, abi_data):
 def play_game(wallet_address, private_key, players_id, abi_data, game_index):
 	print(wallet_address + ' - Creating Transaction! - ' + get_time())
 	web3 = Web3(Web3.HTTPProvider(bsc_network))
-	wallet_address = web3.toChecksumAddress(wallet_address)
+	wallet_address = web3.to_checksum_address(wallet_address)
 
-	contract_address = web3.toChecksumAddress(snw_game_contract_address)
+	contract_address = web3.to_checksum_address(snw_game_contract_address)
 	contract = web3.eth.contract(address=contract_address, abi=abi_data)
 
-	value = web3.toWei(0, 'ether')
+	value = web3.to_wei(0, 'ether')
 	nonce = web3.eth.get_transaction_count(wallet_address)
 
-	contracts_tx = contract.functions.playGame(game_index, players_id, contract_version).buildTransaction({
+	contracts_tx = contract.functions.playGame(game_index, players_id, contract_version).build_transaction({
 		'chainId': 56,
 		'from': wallet_address,
 		'value': value,
 		'gas': 1000000,
-		'gasPrice': web3.toWei('5','gwei'), 
+		'gasPrice': web3.to_wei('5','gwei'), 
 		'nonce': nonce
     })
 
@@ -191,19 +191,19 @@ def run_game_cycle(wallets_array, abi_player_data, abi_game_data, sleep_time):
 def get_new_contracts(abi_data, wallet_address, private_key, players, date_time):
 	web3 = Web3(Web3.HTTPProvider(bsc_network))
 
-	contract_address = web3.toChecksumAddress(snw_game_contract_address)
-	wallet_address = web3.toChecksumAddress(wallet_address)
+	contract_address = web3.to_checksum_address(snw_game_contract_address)
+	wallet_address = web3.to_checksum_address(wallet_address)
 	contract = web3.eth.contract(address=contract_address, abi=abi_data)
 
-	value = web3.toWei(0, 'ether')
+	value = web3.to_wei(0, 'ether')
 	nonce = web3.eth.get_transaction_count(wallet_address)
 
-	contracts_tx = contract.functions.buyContractsV2(players, 1).buildTransaction({
+	contracts_tx = contract.functions.buyContractsV2(players, 1).build_transaction({
 		'chainId': 56,
 		'from': wallet_address,
 		'value': value,
 		'gas': 1000000,
-		'gasPrice': web3.toWei('10','gwei'), 
+		'gasPrice': web3.to_wei('10','gwei'), 
 		'nonce': nonce
     })
 
